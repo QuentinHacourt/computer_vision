@@ -548,3 +548,5 @@ pyrightconfig.json
 .history
 .ionide
 
+#Images Folder
+images/
