@@ -4,7 +4,13 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 import glob
+import scanline_optimization as scan_opt
+#--------
+from pyvisim.encoders import FisherVectorEncoder
+from pyvisim.features import SIFT
+#from pyvisim.datasets import OxfordFlowerDataset
 
+# ------ old
 def extract_descriptors(image_paths):
     sift = cv.SIFT_create()
     all_descriptors = []
@@ -40,29 +46,62 @@ def compute_bow(descriptor_map, kmeans_model):
         image_features.append(histogram)
 
     return np.array(image_features)
+#------------------
+
+#------------------
+def compute_vsm(image_paths):
+    # Initialize a RootSIFT feature extractor
+    feature_extractor = SIFT()
+    # Initialize a Fisher Vector encoder
+    fisher_encoder = FisherVectorEncoder(feature_extractor=feature_extractor)
+
+    # Train the encoder with GMM clustering
+    fisher_encoder.learn(image_paths, n_clusters=10)
+
 
 
 print("Extract SIFT Features")
 
+
+
 image_paths = sorted(glob.glob("images/*.JPG"))
-descriptors, descriptor_map = extract_descriptors(image_paths)
+compute_vsm(image_paths)
+# print(image_paths)
+# descriptors, descriptor_map = extract_descriptors(image_paths)
 
-kmeans = KMeans(10, random_state=42)
-kmeans.fit(descriptors)
+# kmeans = KMeans(10, random_state=42)
+# kmeans.fit(descriptors)
 
-print("Computing Bag of Visual Words")
-bovw_matrix = compute_bow(descriptor_map, kmeans)
+# print("Computing Bag of Visual Words")
+# bovw_matrix = compute_bow(descriptor_map, kmeans)
 
-print("distance matrix")
-distance_matrix = euclidean_distances(bovw_matrix, bovw_matrix)
-print(distance_matrix)
+# print("distance matrix")
+# distance_matrix = euclidean_distances(bovw_matrix, bovw_matrix)
+# print(distance_matrix)
+# np.savetxt("distance_matrix.csv", distance_matrix, delimiter=",")
 
-fig, ax = plt.subplots()
-im = ax.imshow(distance_matrix)
+# fig, ax = plt.subplots()
+# im = ax.imshow(distance_matrix)
 
-cbar = ax.figure.colorbar(im, ax=ax)
-cbar.ax.set_ylabel("Euclidean Similarity", rotation=-90, va="bottom")
+# cbar = ax.figure.colorbar(im, ax=ax)
+# cbar.ax.set_ylabel("Euclidean Similarity", rotation=-90, va="bottom")
 
-ax.set_title("Distance Matrix")
-fig.tight_layout()
-plt.show()
+# ax.set_title("Distance Matrix")
+# fig.tight_layout()
+# plt.show()
+
+# #-------------------
+# H = scan_opt.generalized_scanline_optimization(-distance_matrix, 0.5)
+# print(H)
+# np.savetxt("H_matrix.csv", H, delimiter=",")
+
+# # ------------
+# fig, ax = plt.subplots()
+# im = ax.imshow(H)
+
+# cbar = ax.figure.colorbar(im, ax=ax)
+# # cbar.ax.set_ylabel("Euclidean Similarity", rotation=-90, va="bottom")
+
+# ax.set_title("H Matrix")
+# fig.tight_layout()
+# plt.show()
