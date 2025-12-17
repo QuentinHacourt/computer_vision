@@ -2,6 +2,7 @@ from vsm import create_vsm
 from scanline_optimization import generalized_scanline_optimization as scanl_opt
 from scanline_optimization import backtrack_path
 import matplotlib.pyplot as plt
+import numpy as np
 
 def main():
     S = create_vsm("images/sequence1/", "images/sequence2/")
@@ -12,6 +13,9 @@ def main():
     plot_matrix(H, "H matrix", "")
     print(f"Path length: {len(path)}")
     print(path)
+    Z = np.zeros_like(D)
+    P = path_matrix(path, Z)
+    plot_matrix(P, "PATH", "")
 
 
 def plot_matrix(A, title, y_label):
@@ -24,6 +28,14 @@ def plot_matrix(A, title, y_label):
     ax.set_title(title)
     fig.tight_layout()
     plt.show()
+
+def path_matrix(path, P):
+    for x, d in path:
+        P[x, d] = 1
+
+    return P
+
+
 
 
 
