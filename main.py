@@ -1,13 +1,17 @@
 from vsm import create_vsm
 from scanline_optimization import generalized_scanline_optimization as scanl_opt
+from scanline_optimization import backtrack_path
 import matplotlib.pyplot as plt
 
 def main():
-    S = create_vsm("images/sequence1", "images/sequence2")
-    D = S - 1
+    S = create_vsm("images/sequence1/", "images/sequence2/")
+    D = -S
     H = scanl_opt(D, 1.2)
+    path = backtrack_path(H, 1.2)
     plot_matrix(D, "Distance Matrix", "Euclidean Similarity")
     plot_matrix(H, "H matrix", "")
+    print(f"Path length: {len(path)}")
+    print(path)
 
 
 def plot_matrix(A, title, y_label):

@@ -38,3 +38,49 @@ def generalized_scanline_optimization(D, lmbd):
             H[x, d] = min(0, D[x][d] + h_vals[x][d])
 
     return H
+
+
+import numpy as np
+
+def backtrack_path(H, lmbda):
+    """
+    H: The accumulated cost matrix (n x m)
+    lmbda: The regularization weight used during matrix calculation
+    """
+    n, m = H.shape
+
+    # find min value of array, check whole array just to be sure
+    flat_idx = np.argmin(H)
+    current_x_raw, current_d_raw = np.unravel_index(flat_idx, H.shape)
+
+    current_x = int(current_x_raw)
+    current_d = int(current_d_raw)
+
+    path = [(current_x, current_d)]
+
+    # 2. Iterate backwards from the end of sequence 1 to the start
+    while current_x > 0:
+        # if score is too bad we stop the path like in the paper
+        if H[current_x, current_d] >= 0:
+            break
+        prev_x = current_x - 1
+        best_prev_d = -1
+        min_prev_cost = float('inf')
+
+        # Search across possible previous d' values
+        for prev_d in range(m):
+            v_cost = regularisation_cost(dx=current_d, prev=prev_d)
+
+            # Reconstruct the score from the previous step
+            total_prev_cost = H[prev_x, prev_d] + (lmbda * v_cost)
+
+            if total_prev_cost < min_prev_cost:
+                min_prev_cost = total_prev_cost
+                best_prev_d = prev_d
+
+        current_d = best_prev_d
+        current_x = prev_x
+        path.append((current_x, current_d))
+
+    # The path is gathered backwards, so reverse it
+    return path[::-1]
