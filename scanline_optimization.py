@@ -61,7 +61,7 @@ def backtrack_path(H, lmbda):
     # 2. Iterate backwards from the end of sequence 1 to the start
     while current_x > 0:
         # if score is too bad we stop the path like in the paper
-        if H[current_x, current_d] >= 0:
+        if H[current_x, current_d] >= -6.5:
             break
         prev_x = current_x - 1
         best_prev_d = -1
