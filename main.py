@@ -1,68 +1,59 @@
-import numpy as np
-import cv2 as cv
+# from vsm import create_vsm, compute_vsm
+from scanline_optimization import generalized_scanline_optimization as scanl_opt
+from scanline_optimization import backtrack_path, normalized_score
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-from sklearn.metrics.pairwise import euclidean_distances
-import glob
+import numpy as np
 
-def extract_descriptors(image_paths):
-    sift = cv.SIFT_create()
-    all_descriptors = []
-    img_descriptor_map = {}
+def main():
+    # S = compute_vsm("images/sequence1/", "images/sequence2/")
+    # write_matrix_to_csv(S, "vsm")
+    S = read_from_csv("vsm")
+    D = - S
+    lbd = 1.2
+    H = scanl_opt(D, lbd)
+    path = backtrack_path(H, lbd)
+    plot_matrix(D, "Distance Matrix", "Euclidean Similarity")
+    plot_matrix(H, "H matrix", "")
+    Z = np.zeros_like(D)
+    P = path_matrix(path, Z)
+    plot_matrix(P, "PATH", "")
 
-    for path in image_paths:
-        img = cv.imread(path, cv.IMREAD_GRAYSCALE)
-        if img is None:
-            continue
+    N = normalized_score(H, path)
+    plot_matrix(N, "Normalized Scores", "")
 
-        keypoints, descriptors = sift.detectAndCompute(img, None)
-        if descriptors is not None:
-            all_descriptors.append(descriptors)
-            img_descriptor_map[path] = descriptors
-        else:
-            img_descriptor_map[path] = np.array([])
-    
-    return np.vstack(all_descriptors), img_descriptor_map
+def try_lambdas(D):
+    lambdas = [0.0, 0.5, 1, 2, 5, 10, 50, 100, 1000]
 
-def compute_bow(descriptor_map, kmeans_model):
-    image_features = []
+    for lmd in lambdas:
+        H = scanl_opt(D, lmd)
+        plot_matrix(H, f"lambda = {lmd}","")
+        path = backtrack_path(H, lmd)
+        Z = np.zeros_like(D)
+        P = path_matrix(path, Z)
+        plot_matrix(P, f"PATH with lmd = {lmd}", "")
 
-    vocab_size = kmeans_model.n_clusters
+def write_matrix_to_csv(matrix, filename):
+    np.savetxt(filename + ".csv", matrix)
 
-    for path, descriptors in descriptor_map.items():
-        histogram = np.zeros(vocab_size)
-        if descriptors.size > 0:
-            visual_words = kmeans_model.predict(descriptors)
-            for i in visual_words:
-                histogram[i] += 1
+def read_from_csv(filename):
+    matrix = np.loadtxt(open(filename + ".csv", "r"), delimiter=" ")
+    return matrix
 
-        histogram /= np.sum(histogram) if np.sum(histogram) != 0 else 1
-        image_features.append(histogram)
+def plot_matrix(A, title, y_label):
+    fig, ax = plt.subplots()
+    im = ax.imshow(A)
 
-    return np.array(image_features)
+    cbar = ax.figure.colorbar(im, ax=ax)
+    cbar.ax.set_ylabel(y_label, rotation=-90, va="bottom")
 
+    ax.set_title(title)
+    fig.tight_layout()
+    plt.show()
 
-print("Extract SIFT Features")
+def path_matrix(path, P):
+    for x, d in path:
+        P[x, d] = 1
 
-image_paths = sorted(glob.glob("images/*.JPG"))
-descriptors, descriptor_map = extract_descriptors(image_paths)
+    return P
 
-kmeans = KMeans(10, random_state=42)
-kmeans.fit(descriptors)
-
-print("Computing Bag of Visual Words")
-bovw_matrix = compute_bow(descriptor_map, kmeans)
-
-print("distance matrix")
-distance_matrix = euclidean_distances(bovw_matrix, bovw_matrix)
-print(distance_matrix)
-
-fig, ax = plt.subplots()
-im = ax.imshow(distance_matrix)
-
-cbar = ax.figure.colorbar(im, ax=ax)
-cbar.ax.set_ylabel("Euclidean Similarity", rotation=-90, va="bottom")
-
-ax.set_title("Distance Matrix")
-fig.tight_layout()
-plt.show()
+main()
