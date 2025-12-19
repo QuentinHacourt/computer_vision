@@ -1,22 +1,46 @@
-from vsm import create_vsm
+from vsm import create_vsm, compute_vsm
 from scanline_optimization import generalized_scanline_optimization as scanl_opt
 from scanline_optimization import backtrack_path
 import matplotlib.pyplot as plt
 import numpy as np
 
 def main():
-    S = create_vsm("images/sequence1/", "images/sequence2/")
-    D = -S
-    H = scanl_opt(D, 1.2)
-    path = backtrack_path(H, 1.2)
-    plot_matrix(D, "Distance Matrix", "Euclidean Similarity")
-    plot_matrix(H, "H matrix", "")
-    print(f"Path length: {len(path)}")
-    print(path)
-    Z = np.zeros_like(D)
-    P = path_matrix(path, Z)
-    plot_matrix(P, "PATH", "")
+    #S = compute_vsm("images/sequence1/", "images/sequence2/")
+    #write_matrix_to_csv(S, "vsm")
+    S = read_from_csv("vsm")
+    D = S - 1
+    try_lambdas(D)
+    # D = -S
+    # H = scanl_opt(D, 1.2)
+    # path = backtrack_path(H, 1.2)
+    # plot_matrix(D, "Distance Matrix", "Euclidean Similarity")
+    # plot_matrix(H, "H matrix", "")
+    # # print(f"Path length: {len(path)}")
+    # # print(path)
+    # Z = np.zeros_like(D)
+    # P = path_matrix(path, Z)
+    # plot_matrix(P, "PATH", "")
 
+def try_lambdas(D):
+    lambdas = [0.0, 0.5, 1, 2, 5, 10, 50, 100, 1000]
+
+    for lmd in lambdas:
+        H = scanl_opt(D, lmd)
+        plot_matrix(H, f"lambda = {lmd}","")
+        path = backtrack_path(H, lmd)
+        Z = np.zeros_like(D)
+        P = path_matrix(path, Z)
+        plot_matrix(P, f"PATH with lmd = {lmd}", "")
+
+    
+
+
+def write_matrix_to_csv(matrix, filename):
+    np.savetxt(filename + ".csv", matrix)
+
+def read_from_csv(filename):
+    matrix = np.loadtxt(open(filename + ".csv", "r"), delimiter=" ")
+    return matrix
 
 def plot_matrix(A, title, y_label):
     fig, ax = plt.subplots()
@@ -35,7 +59,7 @@ def path_matrix(path, P):
 
     return P
 
-
+main()
 
 
 
@@ -105,89 +129,8 @@ def path_matrix(path, P):
 
 # #------------------
 
-# def compute_vsm(image_paths):
-#     # Initialize a RootSIFT feature extractor
-#     feature_extractor = SIFT()
-#     # Initialize a Fisher Vector encoder
-#     fisher_encoder = FisherVectorEncoder(feature_extractor=feature_extractor)
-
-#     # Train the encoder with GMM clustering
-#     fisher_encoder.learn(image_paths, n_clusters=10)
-
-#     # Flatten features from images
-#     features = np.vstack([feature_extractor(image) for image in images])
-
-#     if os.path.exists("pca_model.pkl"):
-#             print("--- Load PCA --- ")
-#             pca = joblib.load("pca_model.pkl")
-#     else:
-#         # Train PCA
-#         output_dim = feature_extractor.output_dim
-#         pca = PCA(n_components=output_dim // 2)
-
-#     pca.fit(features)
-
-#     # Save PCA model
-#     joblib.dump(pca, "pca_model.pkl")
-#     features_transformed = pca.transform(features)
-
-#     if os.path.exists("gmm_model.pkl"):
-#         print("--- Load GMM --- ")
-#         gmm = joblib.load("gmm_model.pkl")
-#     else:
-#         gmm = GaussianMixture(n_components=10, covariance_type='diag')
-#         gmm.fit(features_transformed)
-
-#     # Save GMM model
-#     joblib.dump(gmm, "gmm_model.pkl")
-
-
-#     # Initialize Fisher Vector encoder with pre-trained GMM
-#     fisher_encoder = FisherVectorEncoder(feature_extractor=feature_extractor, gmm_model=gmm, pca=pca)
-
-#     print("----- Building Matrix --------")
-#     # Build VSM
-#     matrix = np.zeros((len(image_paths), len(image_paths)))
-
-#     for i in range(len(image_paths)):
-#         for j in range(i, len(image_paths)):
-#             value = fisher_encoder.similarity_score(image_paths[i], image_paths[j])
-#             matrix[i][j] = value
-#             if i != j:
-#                 matrix[j][i] = value
-
-#     # TEST
-#     image_1, image_2 = images[0], images[1]
-#     plot_image(image_1, title="Image 1")
-#     plot_image(image_2, title="Image 2")
-
-#     # Compute similarity using Fisher Vector encoder
-#     similarity = fisher_encoder.similarity_score(image_1, image_2)
-
-#     print("Similarity score:", similarity)
-
-#     image_3, image_4 = images[0], images[19]
-#     plot_image(image_3, title="Image 1")
-#     plot_image(image_4, title="Image 20")
-
-#     similarity_2 = fisher_encoder.similarity_score(image_3, image_4)
-
-#     print("Similarity score:", similarity_2)
-#     return matrix
-
 
 # print("------- Extract SIFT Features -------")
-
-# path = "images/"
-# try:
-#     image_paths = sorted(glob.glob("images/*.JPG"))
-#     images = []
-#     for path in image_paths:
-#         images.append(cv.imread(path, cv.IMREAD_COLOR))
-# except:
-#     raise Exception("Images folder does not exist, or folder is empty")
-
-# print(len(image_paths))
 
 # print("--------- Compute VSM --------")
 # if os.path.exists("distance_matrix.csv"):

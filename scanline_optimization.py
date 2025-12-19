@@ -19,7 +19,7 @@ def generalized_scanline_optimization(D, lmbd):
     H = np.zeros((rows, cols))
 
     # set the first row (base case) 
-    H[0, :] = D[0, :]
+    H   [0, :] = D[0, :]
 
     h_vals = np.zeros((rows, cols))
     # iterate through the first sequence (rows)
