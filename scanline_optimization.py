@@ -29,8 +29,6 @@ def generalized_scanline_optimization(D, lmbd):
 
     return H
 
-import numpy as np
-
 def backtrack_path(H, lmbda):
     n, m = H.shape
 
