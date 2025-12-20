@@ -67,14 +67,16 @@ def extract_sift_features(path):
     return bowv
 
 def create_vsm(path1, path2):
-    bovw1 = extract_sift_features(path1)
-    bovw2 = extract_sift_features(path2)
+    bovw1 = extract_sift_features(f"data/images/{path1}")
+    bovw2 = extract_sift_features(f"data/images/{path2}")
     distance_matrix = euclidean_distances(bovw1, bovw2)
     return distance_matrix
 
 def compute_vsm(path1, path2):
+    full_path1 = f"data/images/{path1}"
+    full_path2 = f"data/images/{path2}"
     try:
-        images_path = sorted(glob.glob(path1 + "*.JPG") + glob.glob(path2 + "*.JPG"))
+        images_path = sorted(glob.glob(full_path1 + "*.JPG") + glob.glob(full_path2 + "*.JPG"))
         images_path = list({os.path.basename(p): p for p in images_path}.values())
         print(images_path)
         images = []
@@ -83,8 +85,8 @@ def compute_vsm(path1, path2):
     except:
         raise Exception("Images folder does not exist, or folder is empty")
     
-    imagespath1 = sorted(glob.glob(path1 + "*.JPG"))
-    imagespath2 = sorted(glob.glob(path2 + "*.JPG"))
+    imagespath1 = sorted(glob.glob(full_path1 + "*.JPG"))
+    imagespath2 = sorted(glob.glob(full_path2 + "*.JPG"))
 
     images1 = []
     images2 = []
@@ -98,14 +100,14 @@ def compute_vsm(path1, path2):
 
     feature_extractor = SIFT()
     
-    if os.path.exists("pca_model_2.pkl"):
+    if os.path.exists("results/pca_model_2.pkl"):
             print("--- Load PCA --- ")
-            pca = joblib.load("pca_model_2.pkl")
+            pca = joblib.load("results/pca_model_2.pkl")
     else:
         # Train PCA
         output_dim = feature_extractor.output_dim
         pca = PCA(n_components=output_dim)
-        joblib.dump(pca, "pca_model_2.pkl")
+        joblib.dump(pca, "results/pca_model_2.pkl")
 
     # Flatten features from images
     features = np.vstack([feature_extractor(image) for image in images])
@@ -114,13 +116,13 @@ def compute_vsm(path1, path2):
 
     features_transformed = pca.transform(features)
 
-    if os.path.exists("gmm_model_2.pkl"):
+    if os.path.exists("results/gmm_model_2.pkl"):
         print("--- Load GMM --- ")
-        gmm = joblib.load("gmm_model_2.pkl")
+        gmm = joblib.load("results/gmm_model_2.pkl")
     else:
         gmm = GaussianMixture(n_components=10, covariance_type='diag')
         gmm.fit(features_transformed)
-        joblib.dump(gmm, "gmm_model_2.pkl")
+        joblib.dump(gmm, "results/gmm_model_2.pkl")
     
     fisher_encoder = FisherVectorEncoder(feature_extractor=feature_extractor, gmm_model=gmm, pca=pca)
     #fisher_encoder.learn(images, n_clusters=10)
