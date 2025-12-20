@@ -1,13 +1,19 @@
 #!/usr/bin/env sh
 
-# if -i || venv doesn't exist
-DIR="./venv/"
+DIR="venv"
 
-if [ ! -d "$DIR" ] || [ "$1" = "-i" ]; then
-    echo "Setting up virtual environment :)"
-    python -m venv venv
-    source venv/bin/activate
+if [ ! -d "$DIR" ] || [ "$1" == "-i" ]; then
+    echo "Setting up Virtual environment :)"
+
+    [ -d "$DIR" ] && rm -rf "$DIR"
+
+    python3 -m venv venv
+    . venv/bin/activate
+    pip install --upgrade pip
     pip install -r requirements.txt
+else
+    echo "Using existing environment :)"
+    . venv/bin/activate
 fi
 
-venv/bin/python code/main.py
+venv/bin/python3 code/main.py
