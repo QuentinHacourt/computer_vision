@@ -12,7 +12,7 @@ def main():
     lbd = 1.2
     H = scanl_opt(D, lbd)
     path = backtrack_path(H, lbd)
-    util.plot_matrix(D, "Distance Matrix", "Euclidean Similarity")
+    util.plot_matrix(D, "Distance Matrix", "Cosine Similarity")
     util.plot_matrix(H, "H matrix", "")
     Z = np.zeros_like(D)
     P = util.path_matrix(path, Z)

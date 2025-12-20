@@ -1,5 +1,5 @@
 from scanline_optimization import generalized_scanline_optimization as scanl_opt
-from scanline_optimization import backtrack_path, normalized_score
+from scanline_optimization import backtrack_path
 import matplotlib.pyplot as plt
 import numpy as np
 
