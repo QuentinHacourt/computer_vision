@@ -2,7 +2,7 @@
 
 DIR="venv"
 
-if [ ! -d "$DIR" ] || [ "$1" == "-i" ]; then
+if [ ! -d "$DIR" ] || [ "$1" = "-i" ]; then
     echo "Setting up Virtual environment :)"
 
     [ -d "$DIR" ] && rm -rf "$DIR"
