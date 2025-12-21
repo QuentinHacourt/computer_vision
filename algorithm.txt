@@ -1,0 +1,58 @@
+Algorithm 1 the score matrix H over sequences x and d with a given lambda
+
+1: Procedure generalized_scanline_optimization(D, lambda):
+2:     rows, cols <- shape of D				# get matrix dimensions
+3:
+4:     H <- zero matrix of size (rows, cols)		# initialize H with zeros
+5:
+6:     for d from 0 to cols - 1:				# copy first row from D
+7:         H[0][d] <- D[0][d]
+8:
+9:     for x from 1 to rows - 1:				# iterate over rows
+10:        for d from 0 to cols - 1:			# iterate over columns
+11:            hh_vals <- empty list
+12:            for d_prev from 0 to cols - 1:
+13:                		transition_cost <- H[x-1][d_prev] + lambda * regularisation_cost(d, d_prev)
+14:                		append transition_cost to hh_vals
+15:
+16:            	    h_vals[x][d] <- minimum value in hh_vals		# best transition into (x, d)
+17:
+18:	for d from 0 to cols - 1:			# iterate over columns
+19:            H[x][d] <- min(0, D[x][d] + h_vals[x][d])  	# apply clipping
+20:
+21:    return H
+
+Algorithm 2 Backtracking the optimal path in cost matrix H
+
+1: procedure BacktrackPath(H, lmbda)
+2:     n, m <- shape(H)
+3:     (current_x, current_d) <- index of min(H)
+4:     path <- [(current_x, current_d)]
+5:     while current_x > 0 do
+6:         if H[current_x, current_d] >= -6.5 then
+7:             break
+8:         prev_x <- current_x -1
+9:         min_cost <- max_float
+10:        for prev_d = 1 to m do
+11:            v_cost <- regularisation_cost(current_d, prev_d)
+12:            total_cost <- H[prev_x, prev_d] + (lmbda * v_cost)
+13:            if total_cost < min_cost then
+14:                min_cost <- total_cost
+15:                best_prev_d <- prev_d
+16:        current_d <- best_prev_d
+17:        current_x <- prev_x
+18:        path.append((current_x, current_d))
+19:    return reverse(path)
+
+Algorithm 3 Normalizing the cost matrix H based on path density
+1: procedure NormalizedScore(H, path)
+2:     rows, cols = shape(H)
+3:     N = matrix of zeros with shape(H)
+4:     L = length(path)
+5:     denominator = L * L
+6:     for i = 0 to rows - 1 do
+7:         for j = 0 to cols - 1 do
+8:             xs, ds = CountXsAndDs(path, i, j)
+9:             numerator = H[i, j] * xs * ds
+10:            N[i, j] = numerator / denominator
+11:    return N
