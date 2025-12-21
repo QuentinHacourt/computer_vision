@@ -1,23 +1,23 @@
 Algorithm 1 the score matrix H over sequences x and d with a given lambda
 
 1: Procedure generalized_scanline_optimization(D, lambda):
-2:     rows, cols <- shape of D				# get matrix dimensions
+2:     rows, cols <- shape of D				                      # get matrix dimensions
 3:
-4:     H <- zero matrix of size (rows, cols)		# initialize H with zeros
+4:     H <- zero matrix of size (rows, cols)		            # initialize H with zeros
 5:
-6:     for d from 0 to cols - 1:				# copy first row from D
+6:     for d from 0 to cols - 1:				                    # copy first row from D
 7:         H[0][d] <- D[0][d]
 8:
-9:     for x from 1 to rows - 1:				# iterate over rows
-10:        for d from 0 to cols - 1:			# iterate over columns
+9:     for x from 1 to rows - 1:				                    # iterate over rows
+10:        for d from 0 to cols - 1:			                  # iterate over columns
 11:            hh_vals <- empty list
 12:            for d_prev from 0 to cols - 1:
-13:                		transition_cost <- H[x-1][d_prev] + lambda * regularisation_cost(d, d_prev)
-14:                		append transition_cost to hh_vals
+13:                transition_cost <- H[x-1][d_prev] + lambda * regularisation_cost(d, d_prev)
+14:                append transition_cost to hh_vals
 15:
-16:            	    h_vals[x][d] <- minimum value in hh_vals		# best transition into (x, d)
+16:             h_vals[x][d] <- minimum value in hh_vals		# best transition into (x, d)
 17:
-18:	for d from 0 to cols - 1:			# iterate over columns
+18:	       for d from 0 to cols - 1:			                  # iterate over columns
 19:            H[x][d] <- min(0, D[x][d] + h_vals[x][d])  	# apply clipping
 20:
 21:    return H
